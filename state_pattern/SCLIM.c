@@ -1,34 +1,64 @@
 // Simple CLI Menus
 #include "SCLIM.h"
+#include "terminalFuncs.h"
 #include <stdio.h> 
 
-struct interface
+// type definitions for structs
+typedef struct Interface Interface;
+typedef struct InterfaceState InterfaceState;
+typedef struct Transition Transition;
+
+// function pointers for Interface Struct
+
+// reads one byte from input buffer and returns as char
+typedef char *(*p_getInput)(void);
+// iterates through state transitions and transitions to correct state
+typedef void (*p_handleInput)(char *input, struct interface *interface);
+// loops to handle input and output
+typedef void (*p_loop)(struct interface *interface);
+
+// function pointers for interfaceState Struct
+typedef void (*p_onEnter)(void);
+typedef void (*p_onExit)(void);
+
+// definitions of structs
+
+// stores current state and function pointers for input
+// output is handled by the state
+struct Interface
 {
+    InterfaceState *state;
+    p_getInput takeInput;
+    p_handleInput handleInput;
+    p_loop loop;
 };
 
-struct input
+
+struct InterfaceState
 {
+    p_onEnter onEnter; // function called entering state
+    p_onExit onExit; // function called exiting state
+    char *stateName; // for debug purposes
+    Transition *transitions; // array of transitions
 };
 
-struct inputState
+struct Transition
 {
-};
-struct inputHandler
-{
-    struct inputState *state;
+    char input; // input to transition on
+    InterfaceState *nextState; // state to transition to
 };
 
-static struct input *input_create()
+static char *getInput()
 {
     // allocate memory for input
-    struct input *input = malloc(sizeof(struct input));
+    char *input = malloc(sizeof(struct input));
     // take input
 
     // return pointer to input
     return input;
 }
 
-static void handleInput(struct input *input, struct interface *interface)
+static void handleInput(char *input, struct interface *interface)
 {
     // handle input
     // call appropriate functions
