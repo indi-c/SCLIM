@@ -1,6 +1,6 @@
-#include "interface.h"
-#include <stdio.h>
-
+// Simple CLI Menus
+#include "SCLIM.h"
+#include <stdio.h> 
 
 struct interface
 {
