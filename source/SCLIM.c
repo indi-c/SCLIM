@@ -17,6 +17,8 @@ typedef char *(*p_getInput)(void);
 typedef void (*p_handleInput)(char *input, struct interface *interface);
 // loops to handle input and output
 typedef void (*p_loop)(struct interface *interface);
+// starts the interface loop
+typedef void (*p_start)(struct interface *interface);
 
 // function pointers for interfaceState Struct
 
@@ -32,9 +34,10 @@ typedef void (*p_onExit)(void);
 struct Interface
 {
     InterfaceState *state;
-    p_getInput takeInput;
+    p_getInput getInput;
     p_handleInput handleInput;
     p_loop loop;
+    p_start start;
 };
 
 
@@ -92,26 +95,33 @@ static void handleInput(char *input, Interface *interface)
     }
 }
 
-static void loop(struct interface *interface)
+static void loop(struct Interface *interface)
 {
-    // loop to handle input and output
-    // calling the appropriate functions
-
-    // declare variable for input
-    // assign return value of input function to variable
-    // call handleInput function with variable and interface as arguments
     
+    while (1)
+    {
+        char input = interface->getInput();
+        interface->handleInput(interface, input);
+    }
+}
+
+static void start(struct Interface *interface)
+{
+    enableRawMode();
+    interface->state->onEnter();
+    interface->loop(interface);
 }
 
 p_getInput getInput = getInput;
 p_handleInput handleInput = handleInput;
 p_loop loop = loop;
+p_start start = start;
 
 // takes input and state and returns a transition Struct
 Transition *createTransition(char input, InterfaceState *nextState)
 {
     // allocate memory for transition
-    Transition *transition = malloc(sizeof(struct transition));
+    Transition *transition = malloc(sizeof(Transition));
     // assign input and nextState to transition
     transition->input = input;
     transition->nextState = nextState;
@@ -153,7 +163,7 @@ Interface *createInterface(InterfaceState *state)
 {
     Interface *interface = malloc(sizeof(Interface));
     interface->state = state;
-    interface->takeInput = getInput;
+    interface->getInput = getInput;
     interface->handleInput = handleInput;
     interface->loop = loop;
     return interface;
